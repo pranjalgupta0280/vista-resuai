@@ -1,6 +1,7 @@
 const userModel=require("../models/user.model")
 const bcrypt=require("bcryptjs")
 const jwt=require("jsonwebtoken")
+const tokenBlacklistModel=require("../models/blacklist.model")
 
 async function registerUserController(req,res)
 {
@@ -42,19 +43,12 @@ async function registerUserController(req,res)
         email:user.email
     }
  })
- res.cookie("token",token)
- res.status(200).json({
-    message:"User loggedIn successfully.",
-    user:{
-        id:user._id,
-        username:user.username,
-        email:user.email
-    }
- })
 
 }
 async function loginUserController(req,res){
-    const{email,password}=req.body
+    try 
+    {
+        const{email,password}=req.body
     const user=await userModel.findOne({email})
     if(!user)
     {
@@ -72,9 +66,44 @@ async function loginUserController(req,res){
     const token=jwt.sign( {id:user._id,username:user.username},
     process.env.JWT_SECRET,
     {expiresIn:"1d"}
+    
  )
+ res.cookie("token",token)
+ res.status(200).json({
+    message:"User loggedIn successfully.",
+    user:{
+        id:user._id,
+        username:user.username,
+        email:user.email
+    }
+ })
+}
+catch(err)
+{
+    console.log(err)
+    if (!res.headersSent)
+    {
+    res.status(500).send({
+        message:"Internal server error"
+    })
+}
+}
+}
+async function logoutUserController(req,res)
+{
+    const token=req.cookies.token
+    if(token)
+    {
+        await tokenBlacklistModel.create({token})
+
+    }
+    res.clearCookie("token")
+    res.status(200).send({
+        message:"User logged out successfully"
+    })
 }
 module.exports={
     registerUserController,
-    loginUserController
+    loginUserController,
+    logoutUserController
 }
