@@ -3,11 +3,12 @@
 // import viteLogo from './assets/vite.svg'
 // import heroImg from './assets/hero.png'
 // import './App.css'
-
+import { RouterProvider } from "react-router"
+import {router} from "./app.routes.jsx"
 function App() {
   return (
     <>
-      
+      <RouterProvider router={router}/>
     </>
   )
 }
