@@ -1,11 +1,16 @@
 import React from 'react'
+import "../auth.form.scss"
 
 function login() {
+
+    const handleSubmit=(e)=>{
+        e.preventDefault();
+    }
   return (
    <main>
     <div className="form-container">
         <h1>LOGIN</h1>
-        <form>
+        <form onSubmit={handleSubmit}>
 
             <div className="input-group">
                 <label htmlFor="email">Email</label>
@@ -15,7 +20,7 @@ function login() {
                 <label htmlFor="password">Password</label>
                 <input type="text" id='password' name='password' placeholder='Enter password' />
             </div>
-            <button className='button primary-button'></button>
+            <button className='button primary-button' >Submit</button>
 
         </form>
     </div>
