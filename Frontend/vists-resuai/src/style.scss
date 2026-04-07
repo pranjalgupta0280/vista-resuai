@@ -1,0 +1,40 @@
+// Abstracts
+$primary-color: #3498db;
+$secondary-color: #2ecc71;
+$font-stack: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin mobile {
+  @media (max-width: 768px) { @content; }
+}
+
+// Reset
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: $font-stack;
+  line-height: 1.6;
+  background-color: black;
+}
+
+#root{
+    width:100%;
+    // background:black;
+}
+// Components
+.container {
+  max-width: 1100px;
+  margin: auto;
+  overflow: hidden;
+  padding: 0 2rem;
+}
