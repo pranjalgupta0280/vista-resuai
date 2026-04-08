@@ -1,6 +1,8 @@
 import React from 'react'
 import "../auth.form.scss"
+import { Link } from 'react-router';
 function register() {
+  // const navigate=useNavigate();
       const handleSubmit=(e)=>{
         e.preventDefault();
     }
@@ -15,7 +17,7 @@ function register() {
             </div>
             <div className="input-group">
                 <label htmlFor="email">Email</label>
-                <input type="text" id='email' name='email' placeholder='Enter email' />
+                <input type="email" id='email' name='email' placeholder='Enter email' />
             </div>
             <div className="input-group">
                 <label htmlFor="password">Password</label>
@@ -24,6 +26,7 @@ function register() {
             <button className='button primary-button' >Submit</button>
 
         </form>
+        <p>Already have an Account? <Link to={"/login"}>Login</Link></p>
     </div>
    </main>
   )

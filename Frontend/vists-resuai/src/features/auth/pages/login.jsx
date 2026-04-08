@@ -1,10 +1,20 @@
 import React from 'react'
+import { Link } from 'react-router';
 import "../auth.form.scss"
-
-function login() {
-
-    const handleSubmit=(e)=>{
-        e.preventDefault();
+import { useAuth } from '../hooks/useAuth';
+import { useState } from 'react';
+const Login=()=> {
+    // const navigate=useNavigate();
+   const {loading,handleLogin}=useAuth()
+   const [email,setEmail]=useState("")
+   const [password,setPassword]=useState("")
+    const handleSubmit=async(e)=>{
+         e.preventDefault();
+         handleLogin({email,password})
+    }
+    if(loading)
+    {
+        return(<main><h1>Loading....</h1></main>)
     }
   return (
    <main>
@@ -14,18 +24,19 @@ function login() {
 
             <div className="input-group">
                 <label htmlFor="email">Email</label>
-                <input type="text" id='email' name='email' placeholder='Enter email' />
+                <input onChange={(e)=>{setEmail(e.target.value)}} type="email" id='email' name='email' placeholder='Enter email' />
             </div>
             <div className="input-group">
                 <label htmlFor="password">Password</label>
-                <input type="text" id='password' name='password' placeholder='Enter password' />
+                <input onChange={(e)=>{setPassword(e.target.value)}} type="password" id='password' name='password' placeholder='Enter password' />
             </div>
             <button className='button primary-button' >Submit</button>
 
         </form>
+         <p>New Here? <Link to={"/register"}>Register</Link></p>
     </div>
    </main>
   )
 }
 
-export default login
+export default Login
