@@ -28,6 +28,7 @@ export async function login({email,password})
         console.error("Login Error:", error.response?.data || error.message);
         throw error; // Throw it so your UI component can catch it
     }
+    
 }
 
 export async function logout()
@@ -44,7 +45,7 @@ export async function logout()
 export async function getMe()
 {
     try {
-         const response=await axios.post("http://localhost:3000/api/auth/get-me",{
+         const response=await axios.get("http://localhost:3000/api/auth/get-me",{
             withCredentials:true
         })
         return response.data
