@@ -11,12 +11,12 @@ const interviewReportSchema = z.object({
   technicalQuestions: z.array(z.object({
     question: z.string(),
     intention: z.string(),
-    answer: z.string()
+    answer: z.string().min(10)
   })),
   behavioralQuestions: z.array(z.object({
     question: z.string(),
     intention: z.string(),
-    answer: z.string()
+    answer: z.string().min(10)
   })),
   skillGaps: z.array(z.object({
     skill: z.string(),

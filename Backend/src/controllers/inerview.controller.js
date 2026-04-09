@@ -27,7 +27,8 @@ async function generateInterViewReportController(req, res) {
             
             // CORRECTED KEYS HERE:
             technicalQuestions: interViewReportByAi.technicalQuestions, 
-            behavioralQuestions: interViewReportByAi.behavioralQuestions
+            behavioralQuestions: interViewReportByAi.behavioralQuestions,
+            title: interViewReportByAi.title
         });
 
         return res.status(201).json({
@@ -70,7 +71,10 @@ async function getInterviewReportByIdController(req,res){
 
 async function getAllInterviewReportsController(req,res)
 {
-    const interviewReports=(await interviewReportModel.find({user:req.user.id})).toSorted({createdAt:-1}).select("-resume -selfDescription -jobDescription -__v -technicalQuestions -behavioralQuestions -skillGaps -preparationPlan")
+    const interviewReports = await interviewReportModel
+            .find({ user: req.user.id })
+            .sort({ createdAt: -1 })
+            .select("-resume -selfDescription -jobDescription -__v -technicalQuestions -behavioralQuestions -skillGaps -preparationPlan");
      res.status(200).json({
         message: "Interview reports fetched successfully.",
         interviewReports
