@@ -1,24 +1,28 @@
-const express=require('express')
-const cookieParser=require('cookie-parser')
-const cors=require("cors")
-const app =express();
+const express = require('express');
+const cookieParser = require('cookie-parser');
+const cors = require("cors");
+const app = express();
 
+// 1. THE REFRESHED CORS SETUP
 app.use(cors({
-    origin: [
-        'http://localhost:5173', // Keep local testing working
-        'https://vista-resuai-btc4dhv0g-pranjalgupta0280s-projects.vercel.app', // The specific URL from your error
-        /\.vercel\.app$/ // This "Regex" allows ANY subdomain from your Vercel account
-    ],
+    origin: true, // This is the "Nuclear" debug setting: it allows whatever URL is calling it
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
-app.use(express.json())
-app.use(cookieParser())
 
-const authRouter=require("./routes/auth.route");
-const interviewRouter=require("./routes/interview.route")
-app.use("/api/auth",authRouter);    
-app.use("/api/interview",interviewRouter)
+// 2. EXPLICIT PRE-FLIGHT HANDLER
+// This ensures that when the browser asks "Can I talk to you?", 
+// the server immediately says "Yes" with a 200 OK status.
+app.options('*', cors()); 
 
-module.exports=app
+app.use(express.json());
+app.use(cookieParser());
+
+const authRouter = require("./routes/auth.route");
+const interviewRouter = require("./routes/interview.route");
+
+app.use("/api/auth", authRouter);    
+app.use("/api/interview", interviewRouter);
+
+module.exports = app;
