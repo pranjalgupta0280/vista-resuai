@@ -50,7 +50,8 @@ Job:${jobDescription}
 `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    // model: "gemini-2.5-flash",
+    model:"gemini-3-flash-preview",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
     config: {
       responseMimeType: "application/json",
@@ -75,4 +76,4 @@ Job:${jobDescription}
   return interviewReportSchema.parse(parsed);
 }
 
-module.exports = generateInterviewReport;
+module.exports = {generateInterviewReport};
