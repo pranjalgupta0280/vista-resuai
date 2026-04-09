@@ -2,13 +2,13 @@ import axios from 'axios'
 
 // Set base URL so you don't have to type it every time
 const API = axios.create({
-    baseURL: 'http://localhost:3000/api/auth',
+    baseURL: 'https://vista-resuai-3.onrender.com/api/auth',
     withCredentials: true // This applies it to ALL requests automatically
 });
 export async function register({username,email,password})
 {
     try {
-       const response=await axios.post('http://localhost:3000/api/auth/register',{
+       const response=await axios.post('https://vista-resuai-3.onrender.com/api/auth/register',{
         username,email,password
     },{
         withCredentials:true
@@ -34,7 +34,7 @@ export async function login({email,password})
 export async function logout()
 {
     try {
-        const response=await axios.post("http://localhost:3000/api/auth/logout",{
+        const response=await axios.post("https://vista-resuai-3.onrender.com/api/auth/logout",{
             withCredentials:true
         })
         return response.data
@@ -45,7 +45,7 @@ export async function logout()
 export async function getMe()
 {
     try {
-         const response=await axios.get("http://localhost:3000/api/auth/get-me",{
+         const response=await axios.get("https://vista-resuai-3.onrender.com/api/auth/get-me",{
             withCredentials:true
         })
         return response.data
@@ -55,7 +55,7 @@ export async function getMe()
 }
 export const logoutUserAPI = async () => {
     try {
-        const response = await fetch('http://localhost:3000/api/auth/logout', {
+        const response = await fetch('https://vista-resuai-3.onrender.com/api/auth/logout', {
             method: 'POST', // or GET, depending on your backend setup
             headers: {
                 'Content-Type': 'application/json',
