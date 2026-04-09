@@ -1,42 +1,61 @@
+import LogoutButton from "../../auth/components/logout.jsx" 
 import "../styles/home.scss"
 import React, { useState, useRef } from 'react'
 import { useInterview } from '../hooks/useInterview.js'
 import { useNavigate } from 'react-router'
+// import LogoutButton from '../components/LogoutButton' 
 
 const Home = () => {
-  const { loading, generateReport,reports } = useInterview()
+    const { loading, generateReport, reports } = useInterview()
     const [ jobDescription, setJobDescription ] = useState("")
     const [ selfDescription, setSelfDescription ] = useState("")
+    
+    // 👇 1. Add an error state
+    const [ errorMessage, setErrorMessage ] = useState(null) 
     const resumeInputRef = useRef()
 
- const navigate = useNavigate()
-  const handleGenerateReport = async () => {
-        const resumeFile = resumeInputRef.current.files[ 0 ]
-        const data = await generateReport({ jobDescription, selfDescription, resumeFile })
-        navigate(`/interview/${data._id}`)
+    const navigate = useNavigate()
+    
+    const handleGenerateReport = async () => {
+        // Clear any old errors when they try again
+        setErrorMessage(null) 
+
+        const resumeFile = resumeInputRef.current?.files[0]
+        
+        // 👇 2. Wrap the API call in a try...catch block
+        try {
+            const data = await generateReport({ jobDescription, selfDescription, resumeFile })
+            
+            // Only navigate if we actually got data back
+            if (data && data._id) {
+                navigate(`/interview/${data._id}`)
+            }
+        } catch (error) {
+            console.error("Failed to generate report:", error);
+            // Show a friendly message to the user. The form data remains untouched!
+            setErrorMessage("The AI model is currently experiencing high demand. Please wait a few seconds and try again.");
+        }
     }
 
     if (loading) {
         return (
             <main className='loading-screen'>
                 <h1>Loading your interview plan...</h1>
+                <p style={{marginTop: "1rem"}}>This usually takes about 30 seconds.</p>
             </main>
         )
     }
+    
     return (
         <div className='home-page'>
-
-            {/* Page Header */}
             <header className='page-header'>
                 <h1>Create Your Custom <span className='highlight'>Interview Plan</span></h1>
                 <p>Let our AI analyze the job requirements and your unique profile to build a winning strategy.</p>
             </header>
 
-            {/* Main Card */}
             <div className='interview-card'>
                 <div className='interview-card__body'>
 
-                    {/* Left Panel - Job Description */}
                     <div className='panel panel--left'>
                         <div className='panel__header'>
                             <span className='panel__icon'>
@@ -46,18 +65,17 @@ const Home = () => {
                             <span className='badge badge--required'>Required</span>
                         </div>
                         <textarea
-                             onChange={(e) => { setJobDescription(e.target.value) }}
+                            value={jobDescription}
+                            onChange={(e) => { setJobDescription(e.target.value) }}
                             className='panel__textarea'
                             placeholder={`Paste the full job description here...\ne.g. 'Senior Frontend Engineer at Google requires proficiency in React, TypeScript, and large-scale system design...'`}
                             maxLength={5000}
                         />
-                        <div className='char-counter'>0 / 5000 chars</div>
+                        <div className='char-counter'>{jobDescription.length} / 5000 chars</div>
                     </div>
 
-                    {/* Vertical Divider */}
                     <div className='panel-divider' />
 
-                    {/* Right Panel - Profile */}
                     <div className='panel panel--right'>
                         <div className='panel__header'>
                             <span className='panel__icon'>
@@ -66,7 +84,6 @@ const Home = () => {
                             <h2>Your Profile</h2>
                         </div>
 
-                        {/* Upload Resume */}
                         <div className='upload-section'>
                             <label className='section-label'>
                                 Upload Resume
@@ -78,18 +95,17 @@ const Home = () => {
                                 </span>
                                 <p className='dropzone__title'>Click to upload or drag &amp; drop</p>
                                 <p className='dropzone__subtitle'>PDF or DOCX (Max 5MB)</p>
-                                <input ref={resumeInputRef}  hidden type='file' id='resume' name='resume' accept='.pdf,.docx' />
+                                <input ref={resumeInputRef} hidden type='file' id='resume' name='resume' accept='.pdf,.docx' />
                             </label>
                         </div>
 
-                        {/* OR Divider */}
                         <div className='or-divider'><span>OR</span></div>
 
-                        {/* Quick Self-Description */}
                         <div className='self-description'>
                             <label className='section-label' htmlFor='selfDescription'>Quick Self-Description</label>
                             <textarea
-                                  onChange={(e) => { setSelfDescription(e.target.value) }}
+                                value={selfDescription}
+                                onChange={(e) => { setSelfDescription(e.target.value) }}
                                 id='selfDescription'
                                 name='selfDescription'
                                 className='panel__textarea panel__textarea--short'
@@ -97,7 +113,6 @@ const Home = () => {
                             />
                         </div>
 
-                        {/* Info Box */}
                         <div className='info-box'>
                             <span className='info-box__icon'>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" stroke="#1a1f27" strokeWidth="2" /><line x1="12" y1="16" x2="12.01" y2="16" stroke="#1a1f27" strokeWidth="2" /></svg>
@@ -107,9 +122,16 @@ const Home = () => {
                     </div>
                 </div>
 
-                {/* Card Footer */}
+                {/* 👇 3. Display the error message if one exists */}
+                {errorMessage && (
+                    <div style={{ padding: '1rem', margin: '0 2rem', backgroundColor: '#ffebee', color: '#c62828', borderRadius: '8px', border: '1px solid #ef9a9a', textAlign: 'center', fontWeight: '500' }}>
+                        ⚠️ {errorMessage}
+                    </div>
+                )}
+
                 <div className='interview-card__footer'>
-                    <span className='footer-info'>AI-Powered Strategy Generation &bull; Approx 30s</span>
+                    <LogoutButton />
+
                     <button
                         onClick={handleGenerateReport}
                         className='generate-btn'>
@@ -119,8 +141,21 @@ const Home = () => {
                 </div>
             </div>
 
+             {reports.length > 0 && (
+                <section className='recent-reports'>
+                    <h2>My Recent Interview Plans</h2>
+                    <ul className='reports-list'>
+                        {reports.map(report => (
+                            <li key={report._id} className='report-item' onClick={() => navigate(`/interview/${report._id}`)}>
+                                <h3>{report.title || 'Untitled Position'}</h3>
+                                <p className='report-meta'>Generated on {new Date(report.createdAt).toLocaleDateString()}</p>
+                                <p className={`match-score ${report.matchScore >= 80 ? 'score--high' : report.matchScore >= 60 ? 'score--mid' : 'score--low'}`}>Match Score: {report.matchScore}%</p>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}  
 
-            {/* Page Footer */}
             <footer className='page-footer'>
                 <a href='#'>Privacy Policy</a>
                 <a href='#'>Terms of Service</a>

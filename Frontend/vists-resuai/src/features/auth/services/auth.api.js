@@ -53,3 +53,23 @@ export async function getMe()
         console.log(error)
     }
 }
+export const logoutUserAPI = async () => {
+    try {
+        const response = await fetch('http://localhost:3000/api/auth/logout', {
+            method: 'POST', // or GET, depending on your backend setup
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            // credentials: 'include' // Uncomment if you are clearing httpOnly cookies
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to logout from server");
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("API Error during logout:", error);
+        throw error;
+    }
+};
