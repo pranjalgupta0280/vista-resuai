@@ -4,7 +4,10 @@ const cors=require("cors")
 const app =express();
 
 app.use(cors({
-    origin:"http://localhost:5173",
+    origin: [
+        'https://vista-resuai.vercel.app', // YOUR ACTUAL VERCEL URL
+        'http://localhost:5173'
+    ],
     credentials:true
 }))
 app.use(express.json())
