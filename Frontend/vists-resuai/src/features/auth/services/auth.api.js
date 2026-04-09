@@ -44,14 +44,13 @@ export async function logout()
 }
 export async function getMe()
 {
-    try {
-         const response=await axios.get("https://vista-resuai-3.onrender.com/api/auth/get-me",{
-            withCredentials:true
-        })
-        return response.data
-    } catch (error) {
-        console.log(error)
-    }
+   const token = localStorage.getItem('token');
+    const response = await axios.get(`https://vista-resuai-3.onrender.com/api/auth/me`, {
+        headers: {
+            Authorization: `Bearer ${token}` // 👈 THIS MUST BE HERE
+        }
+    });
+    return response.data;
 }
 export const logoutUserAPI = async () => {
     try {
