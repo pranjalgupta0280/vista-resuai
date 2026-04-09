@@ -3,20 +3,19 @@ const cookieParser = require('cookie-parser');
 const cors = require("cors");
 const app = express();
 
-// 1. THE REFRESHED CORS SETUP
-// 1. Keep this as is (at the very top)
+// 1. GLOBAL CORS MIDDLEWARE
+// This is all you need. It handles GET, POST, and the hidden OPTIONS 
+// requests automatically without needing any wildcard characters.
 app.use(cors({
-    origin: true, 
+    origin: true, // Allows your Vercel URL to connect
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
-// 2. CHANGE THIS LINE (The one that caused the crash)
-// Replace the '*' with the new wildcard syntax:
-app.options('(.*)', cors()); 
+// 🛑 DO NOT add app.options('*') or app.options('(.*)') here.
+// They are causing the PathError crash in Node v22.
 
-// ... rest of your code
 app.use(express.json());
 app.use(cookieParser());
 
