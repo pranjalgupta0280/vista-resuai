@@ -1,7 +1,7 @@
 <div align="center">
   
 
-![Vista ResuAI Banner](docs/images/banner-placeholder.png)
+<!-- ![Vista ResuAI Banner](docs/images/banner-placeholder.png) -->
   
   # 🚀 Vista ResuAI
 
