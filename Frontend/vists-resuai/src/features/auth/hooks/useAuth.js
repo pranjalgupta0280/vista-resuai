@@ -10,10 +10,13 @@ export const useAuth = () => {
         setLoading(true);
         try {
             const data = await login({ email, password });
-            // 1. Persist to localStorage for the next refresh
-            localStorage.setItem('user', JSON.stringify(data.user));
-            // 2. Update React state
-            setUser(data.user);
+            if (data?.token) {
+                localStorage.setItem('token', data.token);
+            }
+            if (data?.user) {
+                localStorage.setItem('user', JSON.stringify(data.user));
+                setUser(data.user);
+            }
         } catch (error) {
             console.log(error);
         } finally {
@@ -25,8 +28,13 @@ export const useAuth = () => {
         setLoading(true);
         try {
             const data = await register({ username, email, password });
-            localStorage.setItem('user', JSON.stringify(data.user));
-            setUser(data.user);
+            if (data?.token) {
+                localStorage.setItem('token', data.token);
+            }
+            if (data?.user) {
+                localStorage.setItem('user', JSON.stringify(data.user));
+                setUser(data.user);
+            }
         } catch (error) {
             console.log(error);
         } finally {

@@ -34,13 +34,20 @@ async function registerUserController(req,res)
     process.env.JWT_SECRET,
     {expiresIn:"1d"}
  )
- res.cookie("token",token)
+ const cookieOptions = {
+     httpOnly: true,
+     secure: true,
+     sameSite: "none",
+     maxAge: 24 * 60 * 60 * 1000
+ };
+ res.cookie("token", token, cookieOptions);
  res.status(201).json({
-    message:"User registered successfully",
-    user:{
-        id:user._id,
-        username:user.username,
-        email:user.email
+    message: "User registered successfully",
+    token: token,
+    user: {
+        id: user._id,
+        username: user.username,
+        email: user.email
     }
  })
 
@@ -68,13 +75,20 @@ async function loginUserController(req,res){
     {expiresIn:"1d"}
     
  )
- res.cookie("token",token)
+ const cookieOptions = {
+     httpOnly: true,
+     secure: true,
+     sameSite: "none",
+     maxAge: 24 * 60 * 60 * 1000
+ };
+ res.cookie("token", token, cookieOptions);
  res.status(200).json({
-    message:"User loggedIn successfully.",
-    user:{
-        id:user._id,
-        username:user.username,
-        email:user.email
+    message: "User loggedIn successfully.",
+    token: token,
+    user: {
+        id: user._id,
+        username: user.username,
+        email: user.email
     }
  })
 }
@@ -91,13 +105,17 @@ catch(err)
 }
 async function logoutUserController(req,res)
 {
-    const token=req.cookies.token
+    const authHeader = req.headers.authorization || req.headers.Authorization;
+    const token = req.cookies.token || (authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null);
     if(token)
     {
-        await tokenBlacklistModel.create({token})
-
+        await tokenBlacklistModel.create({token});
     }
-    res.clearCookie("token")
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none"
+    });
     res.status(200).send({
         message:"User logged out successfully"
     })

@@ -3,11 +3,21 @@ const cookieParser = require('cookie-parser');
 const cors = require("cors");
 const app = express();
 
-// 1. GLOBAL CORS MIDDLEWARE
-// This is all you need. It handles GET, POST, and the hidden OPTIONS 
-// requests automatically without needing any wildcard characters.
+const allowedOrigins = [
+    'https://vista-resuai.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:3000'
+];
+
 app.use(cors({
-    origin: true, // Allows your Vercel URL to connect
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+            callback(null, true);
+        } else {
+            callback(null, true);
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']

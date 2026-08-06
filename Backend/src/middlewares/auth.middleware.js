@@ -2,7 +2,9 @@ const jwt=require("jsonwebtoken")
 const tokenBlacklistModel=require("../models/blacklist.model")
 async function authUser(req,res,next)
 {
-    const token=req.cookies.token
+    const authHeader = req.headers.authorization || req.headers.Authorization;
+    const token = req.cookies.token || (authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null);
+
     if(!token)
     {
         return res.status(401).json({
@@ -12,7 +14,7 @@ async function authUser(req,res,next)
     const isTokenBlacklisted=await tokenBlacklistModel.findOne({token})
     if(isTokenBlacklisted)
     {
-        return res.send(401).json({
+        return res.status(401).json({
             message:"token is invalid"
         })
     }
