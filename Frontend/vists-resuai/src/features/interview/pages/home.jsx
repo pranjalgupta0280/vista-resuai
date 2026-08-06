@@ -1,7 +1,9 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useInterview } from '../hooks/useInterview.js';
+import { getResumeVersions, recommendResumeVersion } from '../services/interview.api.js';
 import Navbar from '../../../components/Navbar.jsx';
+import ResumeVaultModal from '../../../components/ResumeVaultModal.jsx';
 import '../styles/home.scss';
 
 const ITEMS_PER_PAGE = 4;
@@ -15,17 +17,81 @@ const Home = () => {
     const resumeInputRef = useRef();
     const navigate = useNavigate();
 
+    // Resume Versioning states
+    const [savedVersions, setSavedVersions] = useState([]);
+    const [selectedVersionId, setSelectedVersionId] = useState("");
+    const [recommendLoading, setRecommendLoading] = useState(false);
+    const [recommendResult, setRecommendResult] = useState(null);
+    const [isVaultOpen, setIsVaultOpen] = useState(false);
+
     // Search, Filter & Pagination states
     const [searchQuery, setSearchQuery] = useState("");
-    const [scoreFilter, setScoreFilter] = useState("all"); // 'all', 'high', 'mid', 'low'
+    const [scoreFilter, setScoreFilter] = useState("all");
     const [currentPage, setCurrentPage] = useState(1);
+
+    const fetchSavedVersions = async () => {
+        try {
+            const data = await getResumeVersions();
+            if (data?.versions) {
+                setSavedVersions(data.versions);
+            }
+        } catch (error) {
+            console.error("Failed to fetch saved resume versions:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchSavedVersions();
+    }, []);
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setFileName(file.name);
+            setSelectedVersionId(""); // Clear version selection if custom file uploaded
         } else {
             setFileName("");
+        }
+    };
+
+    const handleSelectVersion = (e) => {
+        const versionId = e.target.value;
+        setSelectedVersionId(versionId);
+        if (versionId && fileInputRef.current) {
+            fileInputRef.current.value = ""; // Clear file input if version chosen
+            setFileName("");
+        }
+    };
+
+    const handleRecommendBestVersion = async () => {
+        if (!jobDescription.trim()) {
+            setErrorMessage("Please enter a Target Job Description first to get AI recommendations.");
+            return;
+        }
+
+        if (savedVersions.length === 0) {
+            setErrorMessage("No saved resume versions found. Click 'Resume Vault' in the navbar to add your versions (e.g. Google SWE, Amazon SDE)!");
+            return;
+        }
+
+        setErrorMessage(null);
+        setRecommendLoading(true);
+        setRecommendResult(null);
+
+        try {
+            const data = await recommendResumeVersion({ jobDescription });
+            if (data?.recommendation) {
+                setRecommendResult(data.recommendation);
+                // Automatically select the recommended version
+                if (data.recommendation.recommendedVersionId) {
+                    setSelectedVersionId(data.recommendation.recommendedVersionId);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to recommend resume version:", error);
+            setErrorMessage(error.response?.data?.message || "Failed to get AI recommendation.");
+        } finally {
+            setRecommendLoading(false);
         }
     };
 
@@ -38,13 +104,24 @@ const Home = () => {
             return;
         }
 
-        if (!resumeFile && !selfDescription.trim()) {
-            setErrorMessage("Please upload a Resume or provide a Quick Self-Description.");
+        let resumeTextToUse = "";
+        if (selectedVersionId) {
+            const ver = savedVersions.find(v => v._id === selectedVersionId);
+            if (ver) resumeTextToUse = ver.resumeText;
+        }
+
+        if (!resumeFile && !resumeTextToUse && !selfDescription.trim()) {
+            setErrorMessage("Please select a saved Resume Version, upload a File, or provide a Quick Self-Description.");
             return;
         }
 
         try {
-            const data = await generateReport({ jobDescription, selfDescription, resumeFile });
+            const data = await generateReport({
+                jobDescription,
+                selfDescription,
+                resumeFile,
+                resumeText: resumeTextToUse
+            });
             if (data && data._id) {
                 navigate(`/interview/${data._id}`);
             }
@@ -119,7 +196,7 @@ const Home = () => {
                 <header className="page-header">
                     <div className="hero-badge">✨ AI-POWERED INTERVIEW COACH</div>
                     <h1>Create Your Custom <span className="highlight">Interview Strategy</span></h1>
-                    <p>Upload your resume and paste job details to receive personalized interview questions, skill gap analysis, and prep strategies.</p>
+                    <p>Upload your resume or pick a tailored version from your Resume Vault to receive personalized interview questions, ATS fit scoring, and prep roadmaps.</p>
                 </header>
 
                 {/* Quick Metric Stats */}
@@ -157,6 +234,7 @@ const Home = () => {
                                 <h2>Target Job Description</h2>
                                 <span className="badge badge--required">Required</span>
                             </div>
+
                             <textarea
                                 value={jobDescription}
                                 onChange={(e) => setJobDescription(e.target.value)}
@@ -164,23 +242,52 @@ const Home = () => {
                                 placeholder={`Paste target job description here...\ne.g. 'Senior Frontend Engineer at Google requires proficiency in React, TypeScript, and large-scale system architecture...'`}
                                 maxLength={5000}
                             />
-                            <div className="char-counter">{jobDescription.length} / 5000 chars</div>
+                            <div className="panel-sub-actions">
+                                <div className="char-counter">{jobDescription.length} / 5000 chars</div>
+
+                                <button
+                                    className="recommend-btn"
+                                    onClick={handleRecommendBestVersion}
+                                    disabled={recommendLoading}
+                                >
+                                    {recommendLoading ? "✨ Analyzing Versions..." : "✨ AI Recommend Best Resume"}
+                                </button>
+                            </div>
                         </div>
 
                         <div className="panel-divider" />
 
-                        {/* Right Panel - Profile & Resume */}
+                        {/* Right Panel - Profile & Resume Versions */}
                         <div className="panel panel--right">
                             <div className="panel__header">
                                 <span className="panel__icon">👤</span>
-                                <h2>Your Profile</h2>
+                                <h2>Select Resume Profile</h2>
                             </div>
 
-                            <div className="upload-section">
+                            {/* Resume Vault Version Dropdown */}
+                            <div className="version-selector-group">
                                 <label className="section-label">
-                                    Upload Resume
-                                    <span className="badge badge--best">Best Results</span>
+                                    Saved Resume Version (Resume Vault)
+                                    <button className="manage-vault-link" onClick={() => setIsVaultOpen(true)}>+ Manage Vault</button>
                                 </label>
+
+                                <select
+                                    value={selectedVersionId}
+                                    onChange={handleSelectVersion}
+                                    className="version-dropdown"
+                                >
+                                    <option value="">-- Choose a Saved Resume Version --</option>
+                                    {savedVersions.map(v => (
+                                        <option key={v._id} value={v._id}>
+                                            📁 {v.title} {v.targetRole ? `(${v.targetRole})` : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="or-divider"><span>OR UPLOAD NEW FILE</span></div>
+
+                            <div className="upload-section">
                                 <label className="dropzone" htmlFor="resume">
                                     <span className="dropzone__icon">📁</span>
                                     <p className="dropzone__title">{fileName ? fileName : "Click to upload or drag & drop"}</p>
@@ -197,21 +304,45 @@ const Home = () => {
                                 </label>
                             </div>
 
-                            <div className="or-divider"><span>OR</span></div>
+                            <div className="or-divider"><span>OR QUICK BIO</span></div>
 
                             <div className="self-description">
-                                <label className="section-label" htmlFor="selfDescription">Quick Self-Description</label>
                                 <textarea
                                     value={selfDescription}
                                     onChange={(e) => setSelfDescription(e.target.value)}
                                     id="selfDescription"
                                     name="selfDescription"
                                     className="panel__textarea panel__textarea--short"
-                                    placeholder="Briefly describe your experience, tech stack, and key skills if you don't have a resume file handy..."
+                                    placeholder="Briefly describe your experience and tech stack if you don't have a resume handy..."
                                 />
                             </div>
                         </div>
                     </div>
+
+                    {/* AI Recommendation Banner */}
+                    {recommendResult && (
+                        <div className="recommendation-banner glass-card">
+                            <div className="banner-top">
+                                <div className="badge-glow">✨ AI ATS Recommendation</div>
+                                <span className="score-pill">{recommendResult.atsScore}% Estimated ATS Score</span>
+                            </div>
+                            <h3>
+                                Recommended Version: <span className="highlight-cyan">{recommendResult.recommendedTitle}</span>
+                            </h3>
+                            <p className="reason-text">{recommendResult.reason}</p>
+
+                            <button
+                                className="apply-rec-btn"
+                                onClick={() => {
+                                    if (recommendResult.recommendedVersionId) {
+                                        setSelectedVersionId(recommendResult.recommendedVersionId);
+                                    }
+                                }}
+                            >
+                                ✓ Version Selected for Interview Strategy
+                            </button>
+                        </div>
+                    )}
 
                     {/* Error Banner */}
                     {errorMessage && (

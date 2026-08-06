@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import AiTipsModal from './AiTipsModal';
+import ResumeVaultModal from './ResumeVaultModal';
 import './navbar.scss';
 
 const Navbar = () => {
@@ -9,6 +10,7 @@ const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isTipsOpen, setIsTipsOpen] = useState(false);
+    const [isVaultOpen, setIsVaultOpen] = useState(false);
 
     const onLogout = async () => {
         await handleLogout();
@@ -45,6 +47,11 @@ const Navbar = () => {
                             <span className="link-icon">📊</span>
                             <span>Dashboard</span>
                         </Link>
+
+                        <button className="nav-link vault-btn" onClick={() => setIsVaultOpen(true)}>
+                            <span className="link-icon">📁</span>
+                            <span>Resume Vault</span>
+                        </button>
                         
                         <a href="#plans-section" className="nav-link">
                             <span className="link-icon">📄</span>
@@ -79,6 +86,7 @@ const Navbar = () => {
             </nav>
 
             <AiTipsModal isOpen={isTipsOpen} onClose={() => setIsTipsOpen(false)} />
+            <ResumeVaultModal isOpen={isVaultOpen} onClose={() => setIsVaultOpen(false)} />
         </>
     );
 };

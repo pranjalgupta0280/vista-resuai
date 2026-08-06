@@ -15,11 +15,15 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-export const generateInterviewReport = async ({ jobDescription, selfDescription, resumeFile }) => {
+export const generateInterviewReport = async ({ jobDescription, selfDescription, resumeFile, resumeText }) => {
     const formData = new FormData();
-    formData.append("jobDescription", jobDescription);
-    formData.append("selfDescription", selfDescription);
-    formData.append("resume", resumeFile);
+    formData.append("jobDescription", jobDescription || "");
+    formData.append("selfDescription", selfDescription || "");
+    if (resumeFile) {
+        formData.append("resume", resumeFile);
+    } else if (resumeText) {
+        formData.append("resumeText", resumeText);
+    }
 
     const response = await api.post("/api/interview/", formData, {
         headers: {
@@ -36,5 +40,39 @@ export const getInterviewReportById = async (interviewId) => {
 
 export const getAllInterviewReports = async () => {
     const response = await api.get("/api/interview/");
+    return response.data;
+};
+
+// Resume Versioning API endpoints
+export const getResumeVersions = async () => {
+    const response = await api.get("/api/interview/resume-versions");
+    return response.data;
+};
+
+export const createResumeVersion = async ({ title, resumeText, resumeFile, targetRole }) => {
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("targetRole", targetRole || "");
+    if (resumeFile) {
+        formData.append("resume", resumeFile);
+    } else {
+        formData.append("resumeText", resumeText || "");
+    }
+
+    const response = await api.post("/api/interview/resume-versions", formData, {
+        headers: {
+            "Content-Type": "multipart/form-data"
+        }
+    });
+    return response.data;
+};
+
+export const deleteResumeVersion = async (versionId) => {
+    const response = await api.delete(`/api/interview/resume-versions/${versionId}`);
+    return response.data;
+};
+
+export const recommendResumeVersion = async ({ jobDescription }) => {
+    const response = await api.post("/api/interview/recommend-resume", { jobDescription });
     return response.data;
 };

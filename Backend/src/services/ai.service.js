@@ -77,4 +77,62 @@ Job:${jobDescription}
   return interviewReportSchema.parse(parsed);
 }
 
-module.exports = {generateInterviewReport};
+const recommendResumeSchema = z.object({
+  recommendedVersionId: z.string(),
+  recommendedTitle: z.string(),
+  atsScore: z.number(),
+  reason: z.string(),
+  versionScores: z.array(z.object({
+    versionId: z.string(),
+    title: z.string(),
+    score: z.number(),
+    summary: z.string()
+  }))
+});
+
+async function recommendBestResumeVersion({ jobDescription, resumeVersions }) {
+  const versionsFormatted = resumeVersions.map(v => `ID: ${v._id}\nTitle: ${v.title}\nResume Content: ${v.resumeText.slice(0, 1500)}`).join("\n---\n");
+
+  const prompt = `
+Return ONLY valid JSON matching this structure:
+{
+  "recommendedVersionId": "version_id_here",
+  "recommendedTitle": "version_title_here",
+  "atsScore": number_0_to_100,
+  "reason": "Detailed explanation of why this resume version is the best fit for this specific Job Description.",
+  "versionScores": [
+    {
+      "versionId": "version_id_here",
+      "title": "version_title_here",
+      "score": number_0_to_100,
+      "summary": "Brief analysis of fit"
+    }
+  ]
+}
+
+Target Job Description:
+${jobDescription}
+
+Available Resume Versions:
+${versionsFormatted}
+`;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    config: {
+      responseMimeType: "application/json",
+      temperature: 0.2
+    }
+  });
+
+  const text = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) {
+    throw new Error("AI returned empty recommendation response");
+  }
+
+  const parsed = JSON.parse(text);
+  return recommendResumeSchema.parse(parsed);
+}
+
+module.exports = { generateInterviewReport, recommendBestResumeVersion };
