@@ -44,22 +44,27 @@ const Navbar = () => {
                     {/* Navigation Items */}
                     <div className="nav-items">
                         <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
-                            <span className="link-icon">📊</span>
-                            <span>Dashboard</span>
+                            <span className="link-icon">✨</span>
+                            <span>Daily Coach</span>
+                        </Link>
+
+                        <Link to="/create" className={`nav-link ${location.pathname === '/create' ? 'active' : ''}`}>
+                            <span className="link-icon">⚡</span>
+                            <span>Create Strategy</span>
+                        </Link>
+
+                        <Link to="/plans" className={`nav-link ${location.pathname === '/plans' ? 'active' : ''}`}>
+                            <span className="link-icon">📄</span>
+                            <span>My Plans</span>
                         </Link>
 
                         <button className="nav-link vault-btn" onClick={() => setIsVaultOpen(true)}>
                             <span className="link-icon">📁</span>
                             <span>Resume Vault</span>
                         </button>
-                        
-                        <a href="#plans-section" className="nav-link">
-                            <span className="link-icon">📄</span>
-                            <span>My Plans</span>
-                        </a>
 
                         <button className="nav-link tips-btn" onClick={() => setIsTipsOpen(true)}>
-                            <span className="link-icon">✨</span>
+                            <span className="link-icon">💡</span>
                             <span>AI Resume Guide</span>
                         </button>
                     </div>
