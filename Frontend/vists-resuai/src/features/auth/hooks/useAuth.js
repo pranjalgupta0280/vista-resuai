@@ -1,10 +1,13 @@
-import { useContext,useEffect } from "react";
+import { useContext } from "react";
 import { AuthContext } from "../auth.context";
-import { login,register,logout,getMe } from "../services/auth.api";
+import { login, register, logout } from "../services/auth.api";
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
-    const { user, setUser, loading, setLoading } = context;
+    if (!context) {
+        throw new Error("useAuth must be used within an AuthProvider");
+    }
+    const { user, setUser, loading, setLoading, isInitializing } = context;
 
     const handleLogin = async ({ email, password }) => {
         setLoading(true);
@@ -17,8 +20,10 @@ export const useAuth = () => {
                 localStorage.setItem('user', JSON.stringify(data.user));
                 setUser(data.user);
             }
+            return data;
         } catch (error) {
-            console.log(error);
+            console.error("Login Error:", error);
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -35,8 +40,10 @@ export const useAuth = () => {
                 localStorage.setItem('user', JSON.stringify(data.user));
                 setUser(data.user);
             }
+            return data;
         } catch (error) {
-            console.log(error);
+            console.error("Register Error:", error);
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -45,42 +52,14 @@ export const useAuth = () => {
     const handleLogout = async () => {
         try {
             await logout();
-            // Clear everything
+        } catch (error) {
+            console.error("Logout Error:", error);
+        } finally {
             localStorage.removeItem('user');
             localStorage.removeItem('token');
             setUser(null);
-        } catch (error) {
-            console.log(error);
         }
     };
 
-useEffect(() => {
-    const getAndSetUser = async () => {
-        // Only fetch if we have a token but no user state
-        const token = localStorage.getItem('token');
-        if (!token) {
-            setLoading(false);
-            return;
-        }
-
-        try {
-            const data = await getMe();
-            if (data?.user) {
-                setUser(data.user);
-                localStorage.setItem('user', JSON.stringify(data.user));
-            }
-        } catch (error) {
-            console.error("Session expired", error);
-            // Only clear if the server actually says the token is invalid
-            handleLogout(); 
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    getAndSetUser();
-}, []);
-       // Added setUser to dependency array
-
-    return { user, loading, handleRegister, handleLogin, handleLogout };
+    return { user, loading, isInitializing, handleRegister, handleLogin, handleLogout };
 };
