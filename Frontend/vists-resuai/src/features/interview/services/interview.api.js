@@ -76,3 +76,14 @@ export const recommendResumeVersion = async ({ jobDescription }) => {
     const response = await api.post("/api/interview/recommend-resume", { jobDescription });
     return response.data;
 };
+
+// Daily Coach API endpoints
+export const getDailyCoach = async () => {
+    const response = await api.get("/api/interview/daily-coach");
+    return response.data;
+};
+
+export const toggleDailyCoachTask = async (taskId) => {
+    const response = await api.patch("/api/interview/daily-coach/toggle-task", { taskId });
+    return response.data;
+};

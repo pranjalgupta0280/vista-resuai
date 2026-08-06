@@ -15,5 +15,9 @@ interviewRouter.post("/resume-versions", authMiddleware.authUser, upload.single(
 interviewRouter.delete("/resume-versions/:id", authMiddleware.authUser, interviewController.deleteResumeVersionController);
 interviewRouter.post("/recommend-resume", authMiddleware.authUser, interviewController.recommendResumeVersionController);
 
+// Daily Coach endpoints
+interviewRouter.get("/daily-coach", authMiddleware.authUser, interviewController.getDailyCoachController);
+interviewRouter.patch("/daily-coach/toggle-task", authMiddleware.authUser, interviewController.toggleDailyCoachTaskController);
+
 module.exports = interviewRouter;
 

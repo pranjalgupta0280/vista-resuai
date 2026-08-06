@@ -2,6 +2,7 @@ const pdfParse = require("pdf-parse");
 const { generateInterviewReport, recommendBestResumeVersion } = require("../services/ai.service");
 const interviewReportModel = require("../models/interviewReport.model");
 const resumeVersionModel = require("../models/resumeVersion.model");
+const dailyCoachModel = require("../models/dailyCoach.model");
 
 /**
  * @description Controller to generate interview report based on user self description, resume and job description.
@@ -164,6 +165,72 @@ async function recommendResumeVersionController(req, res) {
     }
 }
 
+// ── Daily Coach Controllers ──────────────────────────────────────────────────
+
+async function getDailyCoachController(req, res) {
+    try {
+        const todayStr = new Date().toISOString().split('T')[0];
+        let coach = await dailyCoachModel.findOne({ user: req.user.id, date: todayStr });
+
+        if (!coach) {
+            // Calculate streak count by looking at recent daily records
+            const previousCoaches = await dailyCoachModel.find({ user: req.user.id }).sort({ date: -1 }).limit(1);
+            let streak = 1;
+            if (previousCoaches && previousCoaches.length > 0) {
+                streak = previousCoaches[0].streakCount + 1;
+            }
+
+            const defaultTasks = [
+                { id: 't1', text: 'Learn Redis & System Caching Strategy', estMinutes: 30, completed: false },
+                { id: 't2', text: 'Solve 2 Graph & Data Structure Questions', estMinutes: 40, completed: false },
+                { id: 't3', text: 'Interactive Mock Interview Review', estMinutes: 20, completed: false }
+            ];
+
+            const defaultRecap = [
+                '✓ Resume Version Updated',
+                '✓ 1 Interview Plan Generated'
+            ];
+
+            coach = await dailyCoachModel.create({
+                user: req.user.id,
+                date: todayStr,
+                streakCount: streak,
+                yesterdayRecap: defaultRecap,
+                todayTasks: defaultTasks,
+                totalEstMinutes: 90
+            });
+        }
+
+        return res.status(200).json({ coach });
+    } catch (error) {
+        console.error("getDailyCoachController error:", error);
+        return res.status(500).json({ message: "Failed to fetch daily coach details." });
+    }
+}
+
+async function toggleDailyCoachTaskController(req, res) {
+    try {
+        const { taskId } = req.body;
+        const todayStr = new Date().toISOString().split('T')[0];
+        const coach = await dailyCoachModel.findOne({ user: req.user.id, date: todayStr });
+
+        if (!coach) {
+            return res.status(404).json({ message: "Daily coach record not found." });
+        }
+
+        const task = coach.todayTasks.find(t => t.id === taskId);
+        if (task) {
+            task.completed = !task.completed;
+            await coach.save();
+        }
+
+        return res.status(200).json({ coach });
+    } catch (error) {
+        console.error("toggleDailyCoachTaskController error:", error);
+        return res.status(500).json({ message: "Failed to toggle daily task." });
+    }
+}
+
 module.exports = {
     generateInterViewReportController,
     getInterviewReportByIdController,
@@ -171,5 +238,7 @@ module.exports = {
     createResumeVersionController,
     getResumeVersionsController,
     deleteResumeVersionController,
-    recommendResumeVersionController
+    recommendResumeVersionController,
+    getDailyCoachController,
+    toggleDailyCoachTaskController
 };

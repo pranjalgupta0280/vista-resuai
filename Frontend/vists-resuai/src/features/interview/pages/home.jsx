@@ -4,6 +4,7 @@ import { useInterview } from '../hooks/useInterview.js';
 import { getResumeVersions, recommendResumeVersion } from '../services/interview.api.js';
 import Navbar from '../../../components/Navbar.jsx';
 import ResumeVaultModal from '../../../components/ResumeVaultModal.jsx';
+import DailyCoachWidget from '../../../components/DailyCoachWidget.jsx';
 import '../styles/home.scss';
 
 const ITEMS_PER_PAGE = 4;
@@ -198,6 +199,9 @@ const Home = () => {
                     <h1>Create Your Custom <span className="highlight">Interview Strategy</span></h1>
                     <p>Upload your resume or pick a tailored version from your Resume Vault to receive personalized interview questions, ATS fit scoring, and prep roadmaps.</p>
                 </header>
+
+                {/* Personalized Daily Coach Widget */}
+                <DailyCoachWidget />
 
                 {/* Quick Metric Stats */}
                 <section className="stats-bar">
