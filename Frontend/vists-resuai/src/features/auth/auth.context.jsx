@@ -17,6 +17,8 @@ export const AuthProvider = ({ children }) => {
         const verifyUserSession = async () => {
             const token = localStorage.getItem('token');
             if (!token) {
+                localStorage.removeItem('user');
+                setUser(null);
                 setIsInitializing(false);
                 return;
             }
@@ -28,10 +30,17 @@ export const AuthProvider = ({ children }) => {
                     localStorage.setItem('user', JSON.stringify(data.user));
                 }
             } catch (error) {
-                console.error("Session verification failed:", error);
-                localStorage.removeItem('user');
-                localStorage.removeItem('token');
-                setUser(null);
+                console.error("Session verification notice:", error);
+                const status = error.response?.status;
+                // ONLY log out if the backend explicitly rejected the token (401 or 403)
+                if (status === 401 || status === 403) {
+                    console.warn("Token expired or invalid. Logging out.");
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('token');
+                    setUser(null);
+                } else {
+                    console.warn("Server unavailable or cold start. Preserving active user session from localStorage.");
+                }
             } finally {
                 setIsInitializing(false);
             }
