@@ -24,34 +24,74 @@ function Register() {
     };
 
     if (loading) {
-        return (<main><h1>Loading....</h1></main>);
+        return (
+            <main className="auth-page">
+                <div className="spinner-glow"></div>
+            </main>
+        );
     }
 
     return (
-        <main>
-            <div className="form-container">
-                <h1>REGISTER</h1>
+        <main className="auth-page">
+            <div className="auth-card">
+                <div className="auth-header">
+                    <div className="auth-brand">
+                        <div className="logo-icon">✨</div>
+                        <div className="logo-text">Vista <span>ResuAI</span></div>
+                    </div>
+                    <h1>Create Account</h1>
+                    <p>Start building AI-powered interview plans today</p>
+                </div>
+
                 {errorMsg && (
-                    <div style={{ color: "#e53e3e", marginBottom: "1rem", textAlign: "center", fontSize: "0.9rem" }}>
+                    <div className="error-alert">
                         ⚠️ {errorMsg}
                     </div>
                 )}
+
                 <form onSubmit={handleSubmit}>
                     <div className="input-group">
                         <label htmlFor="username">Username</label>
-                        <input onChange={(e) => { setUsername(e.target.value) }} type="text" id='username' name='username' placeholder='Enter username' required />
+                        <input
+                            onChange={(e) => setUsername(e.target.value)}
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="johndoe"
+                            required
+                        />
                     </div>
+
                     <div className="input-group">
-                        <label htmlFor="email">Email</label>
-                        <input onChange={(e) => { setEmail(e.target.value) }} type="email" id='email' name='email' placeholder='Enter email' required />
+                        <label htmlFor="email">Email Address</label>
+                        <input
+                            onChange={(e) => setEmail(e.target.value)}
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="yourname@example.com"
+                            required
+                        />
                     </div>
+
                     <div className="input-group">
                         <label htmlFor="password">Password</label>
-                        <input onChange={(e) => { setPassword(e.target.value) }} type="password" id='password' name='password' placeholder='Enter password' required />
+                        <input
+                            onChange={(e) => setPassword(e.target.value)}
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="••••••••"
+                            required
+                        />
                     </div>
-                    <button className='button primary-button'>Submit</button>
+
+                    <button className="auth-submit-btn">Create Free Account</button>
                 </form>
-                <p>Already have an Account? <Link to={"/login"}>Login</Link></p>
+
+                <p className="auth-footer-link">
+                    Already have an Account? <Link to="/login">Sign In</Link>
+                </p>
             </div>
         </main>
     );
