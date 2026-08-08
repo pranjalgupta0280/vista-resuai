@@ -62,10 +62,15 @@ Return ONLY valid JSON matching this structure:
   "title": ""
 }
 
-INSTRUCTIONS:
-1. Provide EXACTLY 5 Technical Questions and 5 Behavioral Questions.
-2. Provide a detailed Preparation Roadmap of EXACTLY 6 sequential steps/phases covering core tech fundamentals, architecture, system design, performance, behavioral STAR preparation, and mock interview practice. Do NOT reference days in step focus titles (e.g. use clear topic focus titles).
-3. Ensure matchScore is an integer from 0 to 100.
+INSTRUCTIONS & STRICT SCORING RUBRIC:
+1. Compute matchScore (0 to 100 integer) analytically based on 4 weighted criteria:
+   - Technical Stack & Skill Coverage (Max 35 pts): Award points for exact matches with required languages, frameworks, tools, and databases. Deduct heavily for missing core tech skills required by the job description.
+   - Project Complexity & Practical Relevance (Max 30 pts): Evaluate depth, architecture, full-stack features, and relevance of projects listed.
+   - Achievements, Competitive Ranks & Honors (Max 20 pts): Award points for verified competitive coding achievements (Meta Hacker Cup, Codeforces, LeetCode Knight, hackathons, contest ranks), academic honors, or quantifiable metrics. Resumes with strong achievements MUST score higher than resumes lacking them.
+   - Self-Description & Role Alignment (Max 15 pts): Alignment of candidate self-description with company goals.
+2. CRITICAL: Do NOT round matchScore to generic numbers (e.g., 80 or 85). Compute exact, highly discriminating integer scores (e.g. 73, 91, 64, 88). Two resumes with different achievements or projects MUST receive noticeably different match scores!
+3. Provide EXACTLY 5 Technical Questions and 5 Behavioral Questions.
+4. Provide a detailed Preparation Roadmap of EXACTLY 6 sequential steps/phases covering core tech fundamentals, architecture, system design, performance, behavioral STAR preparation, and mock interview practice. Do NOT reference days in step focus titles.
 
 Resume:${resume}
 Self:${selfDescription}
@@ -76,7 +81,7 @@ Job:${jobDescription}
     messages: [
       {
         role: "system",
-        content: "You are an expert technical interviewer and career coach. Return ONLY valid JSON adhering to the requested format."
+        content: "You are an expert technical interviewer, ATS evaluator, and career coach. Return ONLY valid JSON adhering to the requested format."
       },
       {
         role: "user",
@@ -85,7 +90,7 @@ Job:${jobDescription}
     ],
     model: "llama-3.3-70b-versatile",
     response_format: { type: "json_object" },
-    temperature: 0.3
+    temperature: 0.1
   });
 
   const text = response.choices[0]?.message?.content;
@@ -154,7 +159,7 @@ Return ONLY valid JSON matching this schema:
     ],
     model: "llama-3.3-70b-versatile",
     response_format: { type: "json_object" },
-    temperature: 0.4
+    temperature: 0.3
   });
 
   const text = response.choices[0]?.message?.content;
@@ -200,6 +205,14 @@ Return ONLY valid JSON matching this structure:
   ]
 }
 
+INSTRUCTIONS & STRICT SCORING RUBRIC:
+1. Evaluate each resume version against the Target Job Description using this weighted 100-point rubric:
+   - Technical Stack & Skill Coverage (Max 35 pts)
+   - Project Relevance & Depth (Max 30 pts)
+   - Competitive Ranks & Achievements (Max 20 pts): Strongly reward contest ranks (Meta Hacker Cup, Codeforces, LeetCode Knight), hackathons, and certifications.
+   - Role & Communication Alignment (Max 15 pts)
+2. CRITICAL: Compute precise, non-rounded integer scores (e.g. 93, 76, 61) reflecting exact differences in achievements, project relevance, and tech stack coverage between versions.
+
 Target Job Description:
 ${jobDescription}
 
@@ -220,7 +233,7 @@ ${versionsFormatted}
     ],
     model: "llama-3.3-70b-versatile",
     response_format: { type: "json_object" },
-    temperature: 0.2
+    temperature: 0.1
   });
 
   const text = response.choices[0]?.message?.content;
