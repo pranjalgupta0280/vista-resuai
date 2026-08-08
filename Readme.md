@@ -11,7 +11,7 @@
     <a href="https://vista-resuai-4.onrender.com">
       <img src="https://img.shields.io/badge/Backend-Live%20on%20Render-46E3B7?style=for-the-badge&logo=render" alt="Render Backend" />
     </a>
-    <img src="https://img.shields.io/badge/AI-Google%20Gemini%202.0%2F3.0-9333EA?style=for-the-badge&logo=google" alt="Google Gemini AI" />
+    <img src="https://img.shields.io/badge/AI-Groq%20LLaMA%203.3%2070B-f05032?style=for-the-badge&logo=groq" alt="Groq AI" />
     <img src="https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248?style=for-the-badge&logo=mongodb" alt="MongoDB" />
   </p>
 
@@ -41,7 +41,7 @@
 
 ## 📖 Overview
 
-**Vista ResuAI** is a full-stack web application designed to accelerate technical career preparation. By integrating cutting-edge **Google Gemini AI**, Vista ResuAI provides candidates with:
+**Vista ResuAI** is a full-stack web application designed to accelerate technical career preparation. By integrating cutting-edge **Groq LLaMA 3.3 70B AI**, Vista ResuAI provides candidates with:
 1. **Personalized Daily Coaching**: Daily interview sprints, practice task checkoffs, and retention streak tracking.
 2. **AI Resume Versioning**: Storing tailored resume profiles (*Google SWE*, *Amazon SDE*, *Backend Engineer*) and running AI match scoring against target job descriptions.
 3. **Custom Interview Strategies**: Generating target technical questions, STAR behavioral answers, skill gap roadmaps, and day-by-day study schedules.
@@ -59,7 +59,7 @@
 
 ### 2. AI Resume Versioning & Resume Vault (`/create`)
 * **Resume Vault**: Store multiple tailored resume profiles (*Google SWE*, *Amazon SDE*, *Backend Engineer*, *ML Engineer*).
-* **✨ AI ATS Recommendation Engine**: Paste any target Job Description and click **"✨ AI Recommend Best Resume"**. Gemini AI analyzes all stored resume versions and highlights the top match with an estimated ATS fit score (e.g. `92% ATS Fit`).
+* **✨ AI ATS Recommendation Engine**: Paste any target Job Description and click **"✨ AI Recommend Best Resume"**. Groq AI analyzes all stored resume versions and highlights the top match with an estimated ATS fit score (e.g. `92% ATS Fit`).
 
 ### 3. Interview Strategy Studio (`/create` & `/interview/:id`)
 * **Instant Report Generation**: Upload a resume PDF or choose a vault version to generate a full interview strategy.
@@ -115,7 +115,7 @@ Here is a visual tour of **Vista ResuAI** in action:
 ### Backend
 - **Runtime:** Node.js (Express.js)
 - **Database:** MongoDB Atlas (Mongoose ODM)
-- **AI Integration:** `@google/genai` (Google Gemini API - `gemini-3-flash-preview` / `gemini-2.0-flash`)
+- **AI Integration:** `groq-sdk` (Groq API - `llama-3.3-70b-versatile`)
 - **File Parsing:** `pdf-parse` & `multer` for multipart PDF document parsing
 - **Authentication:** JWT (`jsonwebtoken`), `bcryptjs` password hashing, HTTP-only cookie + Bearer token fallback
 
@@ -132,7 +132,7 @@ vista-resuai/
 │   │   ├── middlewares/     # JWT Auth middleware & Multer file upload middleware
 │   │   ├── models/          # User, InterviewReport, ResumeVersion & DailyCoach schemas
 │   │   ├── routes/          # Express API route declarations
-│   │   ├── services/        # Gemini AI prompt engine & schema validators (Zod)
+│   │   ├── services/        # Groq AI prompt engine & schema validators (Zod)
 │   │   └── app.js           # Express app setup & CORS policy configuration
 │   ├── .env.example
 │   ├── package.json
@@ -162,7 +162,7 @@ vista-resuai/
 ### Prerequisites
 - **Node.js**: v18.x or higher
 - **MongoDB**: Local MongoDB instance or MongoDB Atlas connection URI
-- **Google Gemini API Key**: Obtain a key from [Google AI Studio](https://aistudio.google.com/)
+- **Groq API Key**: Obtain a free API key from [Groq Console](https://console.groq.com/keys)
 
 ### 1. Clone the Repository
 ```bash
@@ -181,7 +181,7 @@ Create a `.env` file in the `Backend/` directory:
 PORT=3000
 MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/vista-resuai
 JWT_SECRET=your_super_secret_jwt_key
-GOOGLE_GENAI_API_KEY=your_gemini_api_key
+GROQ_API_KEY=your_groq_api_key
 ```
 
 Start the backend development server:
@@ -217,7 +217,7 @@ npm run dev
 | **Backend** | `PORT` | Express server port | `3000` |
 | **Backend** | `MONGO_URI` | MongoDB Atlas / Local connection string | `mongodb+srv://...` |
 | **Backend** | `JWT_SECRET` | Secret key for signing JWT tokens | `supersecretkey` |
-| **Backend** | `GOOGLE_GENAI_API_KEY` | Google Gemini API key | `AIzaSy...` |
+| **Backend** | `GROQ_API_KEY` | Groq API key | `gsk_...` |
 | **Frontend** | `VITE_API_URL` | Base API URL for Axios requests | `https://vista-resuai-4.onrender.com` |
 
 ---
@@ -237,7 +237,7 @@ npm run dev
 - `GET /api/interview/resume-versions` — Fetch user's stored resume vault versions
 - `POST /api/interview/resume-versions` — Create a new resume version profile
 - `DELETE /api/interview/resume-versions/:id` — Delete a resume version profile
-- `POST /api/interview/recommend-resume` — Gemini AI match scoring across resume versions
+- `POST /api/interview/recommend-resume` — Groq AI match scoring across resume versions
 - `GET /api/interview/daily-coach` — Get daily coach sprint tasks & prep streak
 - `PATCH /api/interview/daily-coach/toggle-task` — Check off today's prep sprint task
 
@@ -248,5 +248,5 @@ npm run dev
 Distributed under the **MIT License**. See `LICENSE` for more information.
 
 <div align="center">
-  <p>Built with ❤️ by Pranjal Gupta using React, Express, MongoDB & Google Gemini AI</p>
+  <p>Built with ❤️ by Pranjal Gupta using React, Express, MongoDB & Groq AI</p>
 </div>

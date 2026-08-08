@@ -1,8 +1,8 @@
-const { GoogleGenAI } = require("@google/genai");
+const Groq = require("groq-sdk");
 const { z } = require("zod");
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GOOGLE_GENAI_API_KEY
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY || "GROQ_API_KEY_NOT_SET"
 });
 
 // ✅ Schema
@@ -36,7 +36,7 @@ Return ONLY valid JSON.
 
 Structure:
 {
-  "matchScore": number,
+  "matchScore": number_0_to_100,
   "technicalQuestions":[{"question":"","intention":"","answer":""}],
   "behavioralQuestions":[{"question":"","intention":"","answer":""}],
   "skillGaps":[{"skill":"","severity":"low|medium|high"}],
@@ -49,21 +49,23 @@ Self:${selfDescription}
 Job:${jobDescription}
 `;
 
-  const response = await ai.models.generateContent({
-    // model: "gemini-2.0-flash",
-    model:"gemini-3-flash-preview",
-    // model:"gemini-3.1-pro-preview",
-    contents: [{ role: "user", parts: [{ text: prompt }] }],
-    config: {
-      responseMimeType: "application/json",
-      temperature: 0.3
-    }
+  const response = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: "You are an expert technical interviewer and career coach. Return ONLY valid JSON adhering to the requested format."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    model: "llama-3.3-70b-versatile",
+    response_format: { type: "json_object" },
+    temperature: 0.3
   });
 
-  // ✅ Extract text safely
-  const text =
-    response.text ||
-    response.candidates?.[0]?.content?.parts?.[0]?.text;
+  const text = response.choices[0]?.message?.content;
 
   // 🔥 Only raw output log
   console.log("📄 AI Raw Output:\n", text);
@@ -117,16 +119,23 @@ Available Resume Versions:
 ${versionsFormatted}
 `;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: [{ role: "user", parts: [{ text: prompt }] }],
-    config: {
-      responseMimeType: "application/json",
-      temperature: 0.2
-    }
+  const response = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: "You are an expert ATS reviewer and career strategist. Return ONLY valid JSON adhering to the requested format."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    model: "llama-3.3-70b-versatile",
+    response_format: { type: "json_object" },
+    temperature: 0.2
   });
 
-  const text = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text;
+  const text = response.choices[0]?.message?.content;
   if (!text) {
     throw new Error("AI returned empty recommendation response");
   }
