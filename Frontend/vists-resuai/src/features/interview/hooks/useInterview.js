@@ -1,4 +1,4 @@
-import { getAllInterviewReports, generateInterviewReport, getInterviewReportById } from "../services/interview.api";
+import { getAllInterviewReports, generateInterviewReport, getInterviewReportById, generateMoreQuestionsApi } from "../services/interview.api";
 import { useContext, useEffect } from "react"; 
 import { InterviewContext } from "../interview.context";
 import { useParams } from 'react-router';
@@ -25,6 +25,20 @@ export const useInterview = () => {
             throw error;
         } finally {
             setLoading(false);
+        }
+        return response?.interviewReport;
+    };
+
+    const addMoreQuestions = async ({ interviewId, category }) => {
+        let response = null;
+        try {
+            response = await generateMoreQuestionsApi({ interviewId, category });
+            if (response?.interviewReport) {
+                setReport(response.interviewReport);
+            }
+        } catch (error) {
+            console.error("addMoreQuestions error:", error);
+            throw error;
         }
         return response?.interviewReport;
     };
@@ -69,5 +83,5 @@ export const useInterview = () => {
         }
     }, [interviewId]);
 
-    return { loading, report, reports, generateReport, getReportById, getReports };
+    return { loading, report, reports, generateReport, getReportById, getReports, addMoreQuestions };
 };

@@ -1,5 +1,5 @@
 const pdfParse = require("pdf-parse");
-const { generateInterviewReport, recommendBestResumeVersion } = require("../services/ai.service");
+const { generateInterviewReport, generateMoreQuestions, recommendBestResumeVersion } = require("../services/ai.service");
 const interviewReportModel = require("../models/interviewReport.model");
 const resumeVersionModel = require("../models/resumeVersion.model");
 const dailyCoachModel = require("../models/dailyCoach.model");
@@ -231,6 +231,47 @@ async function toggleDailyCoachTaskController(req, res) {
     }
 }
 
+async function generateMoreQuestionsController(req, res) {
+    try {
+        const { interviewId } = req.params;
+        const { category } = req.body;
+
+        const interviewReport = await interviewReportModel.findOne({ _id: interviewId, user: req.user.id });
+        if (!interviewReport) {
+            return res.status(404).json({ message: "Interview report not found." });
+        }
+
+        const targetCategory = category === 'behavioral' ? 'behavioral' : 'technical';
+        const existingQuestions = targetCategory === 'behavioral' 
+            ? interviewReport.behavioralQuestions 
+            : interviewReport.technicalQuestions;
+
+        const newQuestions = await generateMoreQuestions({
+            category: targetCategory,
+            jobDescription: interviewReport.jobDescription,
+            resume: interviewReport.resume,
+            selfDescription: interviewReport.selfDescription,
+            existingQuestions
+        });
+
+        if (targetCategory === 'behavioral') {
+            interviewReport.behavioralQuestions.push(...newQuestions);
+        } else {
+            interviewReport.technicalQuestions.push(...newQuestions);
+        }
+
+        await interviewReport.save();
+
+        return res.status(200).json({
+            message: `5 more ${targetCategory} questions generated successfully.`,
+            interviewReport
+        });
+    } catch (error) {
+        console.error("generateMoreQuestionsController error:", error);
+        return res.status(500).json({ message: "Failed to generate additional questions.", error: error.message });
+    }
+}
+
 module.exports = {
     generateInterViewReportController,
     getInterviewReportByIdController,
@@ -240,5 +281,6 @@ module.exports = {
     deleteResumeVersionController,
     recommendResumeVersionController,
     getDailyCoachController,
-    toggleDailyCoachTaskController
+    toggleDailyCoachTaskController,
+    generateMoreQuestionsController
 };

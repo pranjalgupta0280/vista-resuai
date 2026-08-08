@@ -7,6 +7,7 @@ const interviewRouter=express.Router()
 
 interviewRouter.post("/", authMiddleware.authUser, upload.single("resume"), interviewController.generateInterViewReportController);
 interviewRouter.get("/report/:interviewId", authMiddleware.authUser, interviewController.getInterviewReportByIdController);
+interviewRouter.post("/report/:interviewId/more-questions", authMiddleware.authUser, interviewController.generateMoreQuestionsController);
 interviewRouter.get("/", authMiddleware.authUser, interviewController.getAllInterviewReportsController);
 
 // Resume Versioning endpoints

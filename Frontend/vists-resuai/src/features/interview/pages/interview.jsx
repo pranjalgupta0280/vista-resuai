@@ -38,10 +38,10 @@ const QuestionCard = ({ item, index }) => {
     )
 }
 
-const RoadMapDay = ({ day }) => (
+const RoadMapStep = ({ day, index }) => (
     <div className='roadmap-day glass-card'>
         <div className='roadmap-day__header'>
-            <span className='roadmap-day__badge'>Day {day.day}</span>
+            <span className='roadmap-day__badge'>Step {index + 1}</span>
             <h3 className='roadmap-day__focus'>{day.focus}</h3>
         </div>
         <ul className='roadmap-day__tasks'>
@@ -58,8 +58,9 @@ const RoadMapDay = ({ day }) => (
 // ── Main Component ────────────────────────────────────────────────────────────
 const Interview = () => {
     const [ activeNav, setActiveNav ] = useState('technical')
+    const [ isGeneratingMore, setIsGeneratingMore ] = useState(false)
     const navigate = useNavigate()
-    const { report, getReportById, loading, getResumePdf } = useInterview()
+    const { report, getReportById, loading, getResumePdf, addMoreQuestions } = useInterview()
     const { interviewId } = useParams()
 
     useEffect(() => {
@@ -67,6 +68,17 @@ const Interview = () => {
             getReportById(interviewId)
         }
     }, [ interviewId ])
+
+    const handleLoadMore = async (category) => {
+        setIsGeneratingMore(true)
+        try {
+            await addMoreQuestions({ interviewId, category })
+        } catch (err) {
+            console.error("Failed to generate more questions:", err)
+        } finally {
+            setIsGeneratingMore(false)
+        }
+    }
 
     if (loading || !report) {
         return (
@@ -135,6 +147,15 @@ const Interview = () => {
                                     <QuestionCard key={i} item={q} index={i} />
                                 ))}
                             </div>
+                            <div className='load-more-container'>
+                                <button 
+                                    className='load-more-btn'
+                                    onClick={() => handleLoadMore('technical')}
+                                    disabled={isGeneratingMore}
+                                >
+                                    {isGeneratingMore ? '⚡ Generating 5 More Questions...' : '✨ Generate 5 More Technical Questions'}
+                                </button>
+                            </div>
                         </section>
                     )}
 
@@ -149,6 +170,15 @@ const Interview = () => {
                                     <QuestionCard key={i} item={q} index={i} />
                                 ))}
                             </div>
+                            <div className='load-more-container'>
+                                <button 
+                                    className='load-more-btn'
+                                    onClick={() => handleLoadMore('behavioral')}
+                                    disabled={isGeneratingMore}
+                                >
+                                    {isGeneratingMore ? '⚡ Generating 5 More Questions...' : '✨ Generate 5 More Behavioral Questions'}
+                                </button>
+                            </div>
                         </section>
                     )}
 
@@ -156,11 +186,11 @@ const Interview = () => {
                         <section>
                             <div className='content-header'>
                                 <h2>Preparation Road Map</h2>
-                                <span className='content-header__count'>{report.preparationPlan.length}-day plan</span>
+                                <span className='content-header__count'>{report.preparationPlan.length} steps</span>
                             </div>
                             <div className='roadmap-list'>
-                                {report.preparationPlan.map((day) => (
-                                    <RoadMapDay key={day.day} day={day} />
+                                {report.preparationPlan.map((day, i) => (
+                                    <RoadMapStep key={i} day={day} index={i} />
                                 ))}
                             </div>
                         </section>

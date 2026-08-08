@@ -32,17 +32,40 @@ const interviewReportSchema = z.object({
 
 async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
   const prompt = `
-Return ONLY valid JSON.
+Return ONLY valid JSON matching this structure:
 
-Structure:
 {
   "matchScore": number_0_to_100,
-  "technicalQuestions":[{"question":"","intention":"","answer":""}],
-  "behavioralQuestions":[{"question":"","intention":"","answer":""}],
+  "technicalQuestions": [
+    {"question":"","intention":"","answer":""},
+    {"question":"","intention":"","answer":""},
+    {"question":"","intention":"","answer":""},
+    {"question":"","intention":"","answer":""},
+    {"question":"","intention":"","answer":""}
+  ],
+  "behavioralQuestions": [
+    {"question":"","intention":"","answer":""},
+    {"question":"","intention":"","answer":""},
+    {"question":"","intention":"","answer":""},
+    {"question":"","intention":"","answer":""},
+    {"question":"","intention":"","answer":""}
+  ],
   "skillGaps":[{"skill":"","severity":"low|medium|high"}],
-  "preparationPlan":[{"day":1,"focus":"","tasks":[""]}],
-  "title":""
+  "preparationPlan": [
+    {"day": 1, "focus": "Phase/Step 1 Title", "tasks": ["Task 1", "Task 2", "Task 3"]},
+    {"day": 2, "focus": "Phase/Step 2 Title", "tasks": ["Task 1", "Task 2", "Task 3"]},
+    {"day": 3, "focus": "Phase/Step 3 Title", "tasks": ["Task 1", "Task 2", "Task 3"]},
+    {"day": 4, "focus": "Phase/Step 4 Title", "tasks": ["Task 1", "Task 2", "Task 3"]},
+    {"day": 5, "focus": "Phase/Step 5 Title", "tasks": ["Task 1", "Task 2", "Task 3"]},
+    {"day": 6, "focus": "Phase/Step 6 Title", "tasks": ["Task 1", "Task 2", "Task 3"]}
+  ],
+  "title": ""
 }
+
+INSTRUCTIONS:
+1. Provide EXACTLY 5 Technical Questions and 5 Behavioral Questions.
+2. Provide a detailed Preparation Roadmap of EXACTLY 6 sequential steps/phases covering core tech fundamentals, architecture, system design, performance, behavioral STAR preparation, and mock interview practice. Do NOT reference days in step focus titles (e.g. use clear topic focus titles).
+3. Ensure matchScore is an integer from 0 to 100.
 
 Resume:${resume}
 Self:${selfDescription}
@@ -77,6 +100,71 @@ Job:${jobDescription}
   // ✅ Parse + validate (no extra logs)
   const parsed = JSON.parse(text);
   return interviewReportSchema.parse(parsed);
+}
+
+const moreQuestionsSchema = z.object({
+  questions: z.array(z.object({
+    question: z.string(),
+    intention: z.string(),
+    answer: z.string().min(10)
+  }))
+});
+
+async function generateMoreQuestions({ category, jobDescription, resume, selfDescription, existingQuestions = [] }) {
+  const existingList = existingQuestions.map(q => q.question).join("\n- ");
+  const categoryLabel = category === "behavioral" ? "Behavioral" : "Technical";
+
+  const prompt = `
+Generate EXACTLY 5 NEW and UNIQUE ${categoryLabel} interview questions with detailed intentions and model answers tailored for this role.
+
+Target Job Description:
+${jobDescription}
+
+Resume Context:
+${resume}
+
+Candidate Self-Description:
+${selfDescription}
+
+Existing questions (DO NOT REPEAT ANY OF THESE):
+- ${existingList}
+
+Return ONLY valid JSON matching this schema:
+{
+  "questions": [
+    {
+      "question": "Question text",
+      "intention": "What the interviewer tests",
+      "answer": "Detailed high-scoring model answer"
+    }
+  ]
+}
+`;
+
+  const response = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: `You are an expert ${categoryLabel.toLowerCase()} interviewer. Return ONLY valid JSON adhering to the requested schema.`
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    model: "llama-3.3-70b-versatile",
+    response_format: { type: "json_object" },
+    temperature: 0.4
+  });
+
+  const text = response.choices[0]?.message?.content;
+  if (!text) {
+    throw new Error("AI returned empty questions response");
+  }
+
+  const parsed = JSON.parse(text);
+  const validated = moreQuestionsSchema.parse(parsed);
+  return validated.questions;
 }
 
 const recommendResumeSchema = z.object({
@@ -144,4 +232,4 @@ ${versionsFormatted}
   return recommendResumeSchema.parse(parsed);
 }
 
-module.exports = { generateInterviewReport, recommendBestResumeVersion };
+module.exports = { generateInterviewReport, generateMoreQuestions, recommendBestResumeVersion };

@@ -38,6 +38,11 @@ export const getInterviewReportById = async (interviewId) => {
     return response.data;
 };
 
+export const generateMoreQuestionsApi = async ({ interviewId, category }) => {
+    const response = await api.post(`/api/interview/report/${interviewId}/more-questions`, { category });
+    return response.data;
+};
+
 export const getAllInterviewReports = async () => {
     const response = await api.get("/api/interview/");
     return response.data;
