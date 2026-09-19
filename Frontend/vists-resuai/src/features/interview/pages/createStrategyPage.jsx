@@ -119,7 +119,8 @@ const CreateStrategyPage = () => {
             }
         } catch (error) {
             console.error("Failed to generate report:", error);
-            setErrorMessage("The AI model is currently experiencing high demand. Please try again in a few seconds.");
+            const msg = error.response?.data?.message || error.message || "The AI model is currently experiencing high demand. Please try again in a few seconds.";
+            setErrorMessage(msg);
         }
     };
 
