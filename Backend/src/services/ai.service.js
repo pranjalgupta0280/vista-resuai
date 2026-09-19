@@ -88,7 +88,7 @@ Job:${jobDescription}
         content: prompt
       }
     ],
-    model: "llama-3.3-70b-versatile",
+    model: "openai/gpt-oss-120b",
     response_format: { type: "json_object" },
     temperature: 0.1
   });
@@ -157,7 +157,7 @@ Return ONLY valid JSON matching this schema:
         content: prompt
       }
     ],
-    model: "llama-3.3-70b-versatile",
+    model: "openai/gpt-oss-120b",
     response_format: { type: "json_object" },
     temperature: 0.3
   });
@@ -231,7 +231,7 @@ ${versionsFormatted}
         content: prompt
       }
     ],
-    model: "llama-3.3-70b-versatile",
+    model: "openai/gpt-oss-120b",
     response_format: { type: "json_object" },
     temperature: 0.1
   });
