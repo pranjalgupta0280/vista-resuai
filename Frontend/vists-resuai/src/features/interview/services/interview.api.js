@@ -15,6 +15,19 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem('token');
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export const generateInterviewReport = async ({ jobDescription, selfDescription, resumeFile, resumeText }) => {
     const formData = new FormData();
     formData.append("jobDescription", jobDescription || "");
